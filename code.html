@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>gray.html</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+</head>
+
+<body>
+  原图像：<input type="button" id="aBtn" value="一键完成"  /><br/>
+  <img  id="code"/><br/>
+  灰度图像：<input type="button" id="processBtn" value="处理"  /><br/>
+  <canvas id="myCanvasElt"></canvas><br/>
+  二值化图像：<input type="button" id="thresholdBtn" value="二值化"  /><br/>
+  <canvas id="myCanvasThreshold" ></canvas><br/>
+   降噪图像：<input type="button" id="denoiseBtn" value="降噪"  /><br/>
+  <canvas id="myCanvasDenoise" ></canvas><br/>
+  字符分割：<input type="button" id="segBtn" value="字符分割"  /><br/>
+  <canvas id="myCanvasSeg1" ></canvas>
+  <canvas id="myCanvasSeg2" ></canvas>
+  <canvas id="myCanvasSeg3" ></canvas>
+  <canvas id="myCanvasSeg4" ></canvas><br/>
+  字符标准：<input type="button" id="staBtn" value="标准化"  /><br/>
+  <canvas id="myCanvasSta1" width="20" height="30" ></canvas>
+  <canvas id="myCanvasSta2" width="20" height="30"></canvas>
+  <canvas id="myCanvasSta3" width="20" height="30"></canvas>
+  <canvas id="myCanvasSta4" width="20" height="30"></canvas><br/>
+  字符识别：<input type="button" id="recBtn" value="字符识别"  /><br/>
+
+  <script type="text/javascript"src="js/index.js"></script>
+  <script type="text/javascript"src="js/tesseract.js"></script>
+</body>
+</html>
