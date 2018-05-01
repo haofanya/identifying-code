@@ -1,5 +1,6 @@
-// var src="images/"+Math.floor(Math.random()*10%8)+"/"+Math.floor(Math.random()*100%49)+".jpg";
-var src="images/8/"+Math.floor(Math.random()*100%49)+".jpg";
+// var fileSrc="images/"+Math.floor(Math.random()*10%8)+"/";
+// var src=fileSrc+Math.floor(Math.random()*100%49)+".jpg";
+var src="images/2/"+Math.floor(Math.random()*100%49)+".jpg";
 document.getElementById("code").src=src;
 //设置canvas宽高
 window.onload=function(){
@@ -16,17 +17,21 @@ window.onload=function(){
   document.getElementById('segBtn').addEventListener("click",Segmentation);
   document.getElementById('staBtn').addEventListener("click",Standard);
   document.getElementById('recBtn').addEventListener("click",recognizeOCR);
+  document.getElementById("import").addEventListener("click", function(){
+  document.getElementById("files").click();;
+  });
 };
 function allProcess(){
   ProcessToGrayImage();
   OTSUAlgorithm();
   Denoise();
   Segmentation();
+  Standard();
 }
 function ProcessToGrayImage(){
   var canvas = document.getElementById('myCanvasElt');
   var ctx = canvas.getContext('2d');
-  var img=document.getElementById("code");
+  // var img=document.getElementById("code");
   var img=new Image();
   img.src=src;
   ctx.drawImage(img,0,0);
@@ -422,6 +427,9 @@ function Segmentation(){
     var imgData=ctx.getImageData(pArr[i-1][0],pArr[i-1][2],pArr[i-1][1],pArr[i-1][3]);
     var newImage = document.getElementById('myCanvasSeg'+i).getContext('2d');
     newImage.putImageData(imgData,0,0);
+    // if(document.getElementById('te').childNodes<4){
+      document.getElementById('te').appendChild(CanvasToImage(document.getElementById('myCanvasSeg'+i)));
+    // }
   }
 }
 
@@ -438,13 +446,24 @@ function pixels2array(pixels,x,y){
 }
 //字符标准化
 function Standard(){
+  // Segmentation();
+  // debugger;
+  imgN=document.getElementById("te").childNodes;
+  // console.log(imgN[1].nodeName);
+  // debugger;
   for(var i=1;i<=4;i++){
-    var c=document.getElementById("myCanvasSeg"+i);
-    console.log(1);
-    var imgData=CanvasToImage(c);
-    var newCanvas = document.getElementById('myCanvasSta'+i);
-    var newImage=newCanvas.getContext('2d');
-    newImage.drawImage(imgData,0,0,c.width,c.height,0,0,newImage.width,newImage.width);
+    // var c=document.getElementById("myCanvasSeg"+i);
+    // var img=new Image();
+    // img.src=CanvasToImage(c);
+    // // var img=document.getElementById("code");
+    // console.log(img);
+    if(imgN[i].nodeName=="IMG"){
+      var img=imgN[i];
+      var newCanvas = document.getElementById('myCanvasSta'+i);
+      var newImage=newCanvas.getContext('2d');
+      console.log(imgN);
+      newImage.drawImage(img,0,0,img.width,img.height,0,0,newCanvas.width,newCanvas.height);
+    }
   }
 }
 // 从canvas提取图片image   
@@ -454,14 +473,88 @@ function CanvasToImage(canvas){
   var image = new Image();
   //canvas.toDataURL返回的是一串Base64编码的URL,当然,浏览器自己肯定支持
   //指定格式PNG
-  image.src = canvas.toDataURL("imgs/"+canvas+".png");
+  image.src = canvas.toDataURL("imgs/jpg");
   return image;
 }
+//选择字模库
+var txt;
+function impor(){
+    var selectedFile = document.getElementById("files").files[0];//获取读取的File对象
+    var name = selectedFile.name;//读取选中文件的文件名
+    var size = selectedFile.size;//读取选中文件的大小
+    console.log("文件名:"+name+"大小："+size);
+
+    var reader = new FileReader();//这里是核心！！！读取操作就是由它完成的。
+    reader.readAsText(selectedFile);//读取文件的内容
+
+    reader.onload = function(){
+        txt=this.result;//当读取完成之后会回调这个函数，然后此时文件的内容存储到了result中。直接操作即可。
+    };
+    return txt;
+}
+//字符转二进制串
+function PreProcess(canvas,x,y){
+  var arr=new Array();
+  for(var i=0;i<4*x*y;i+=4){
+    if(canvas[i]==255){
+      arr.push(0);
+    }
+    else arr.push(1);
+  }
+  return arr;
+}
 //字符识别
-function recognizeOCR(img,zimoPath,maxNearPoints,smallPicWidth,smallPicHeight,type=2,is4Chars=true,charWidth=10){
-  // //1.0验证码前期处理
-  // List<Bitmap> list = PreProcess(img, maxNearPoints, smallPicWidth, smallPicHeight,type,is4Chars,charWidth);
-  // var str = "";
+function recognizeOCR(img,maxNearPoints,smallPicWidth,smallPicHeight,type=2,charWidth=10){
+  var ans="";
+  var zimo=txt.split("\n");
+  zimo.pop();
+  //console.log(zimo);
+  // for(var i=0;i<txt.length;i+=604){
+  //   zimo.push(txt.slice(i,i))
+  // }
+  var arr=new Array();
+  for(var i=1;i<=4;i++){
+    //读取二值化图像信息
+    var imageInfo = GetGrayImageInfo("myCanvasSta"+i);
+    if(imageInfo == null){
+      window.alert("图像还没有转化为标准图像！");
+      return;
+    }
+    //获取图像信息
+    var canvasData = imageInfo[0];
+    //获取图像的像素
+    var pixels = canvasData.data;
+    // console.log(PreProcess(pixels,20,30).join(""));
+    // console.log(zimo[0].slice(3));
+    // debugger;
+    arr.push(PreProcess(pixels,20,30));
+    //图片--->特征码
+    //debugger;
+    var rate = 0;
+    var subCode = "";
+    // console.log(PreProcess(pixels,20,30).join(""));
+    // debugger;
+    for (var j = 0; j < zimo.length; j++)
+    {
+        var subZimo = zimo[j].slice(0,1);
+        //console.log(PreProcess(pixels,20,30));
+        // console.log(zimo[j].slice(3).split(""));
+        //2.3计算相似度
+        var temp = CalcRate(zimo[j],PreProcess(pixels,20,30));
+        //console.log(temp);
+        if (temp > rate)
+        {
+            rate = temp;
+            subCode = subZimo;
+            // console.log(rate);
+            // console.log(subCode);
+        }
+    }
+    //console.log(subZimo);
+    // debugger;
+    ans+= subCode;
+  }
+  console.log(ans);
   // //2.0识别
   // if (list.Count > 0)
   // {
@@ -476,18 +569,36 @@ function recognizeOCR(img,zimoPath,maxNearPoints,smallPicWidth,smallPicHeight,ty
   //         string subCode = "";
   //         for (int j = 0; j < zimo.Length; j++)
   //         {
-  //             string[] subZimo = zimo[j].Split(new string[] { "--" }, StringSplitOptions.None);
-  //             //2.3计算相似度
-  //             int temp = CalcRate(code, subZimo[1]);
-  //             if (temp > rate)
-  //             {
-  //                 rate = temp;
-  //                 subCode = subZimo[0];
-  //             }
-  //         }
+          //     string[] subZimo = zimo[j].Split(new string[] { "--" }, StringSplitOptions.None);
+          //     //2.3计算相似度
+          //     int temp = CalcRate(code, subZimo[1]);
+          //     if (temp > rate)
+          //     {
+          //         rate = temp;
+          //         subCode = subZimo[0];
+          //     }
+          // }
   //         yanzhengma += subCode;
 
   //     }
   // }
   // return yanzhengma;       
+}
+//计算相似度
+function CalcRate(t1, t2){
+  var b1 = t1.slice(3).split("");
+  var b2 = t2;
+  if (b1.length > 0 && b2.length > 0){
+    var cnt = 0;
+    for (var i = 0; i < b2.length; i++)
+    {
+      if (b1[i]==b2[i])
+      {
+        cnt++;
+      }
+    }
+    return cnt;
+  }
+  else
+      return 0;
 }
