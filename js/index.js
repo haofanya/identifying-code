@@ -1,15 +1,9 @@
-// var fileSrc="images/"+Math.floor(Math.random()*10%8)+"/";
-// var src=fileSrc+Math.floor(Math.random()*100%49)+".jpg";
+// var src="images/"+Math.floor(Math.random()*10%8)+"/"+Math.floor(Math.random()*100%49)+".jpg";
 var src="images/2/"+Math.floor(Math.random()*100%49)+".jpg";
 document.getElementById("code").src=src;
 //设置canvas宽高
 window.onload=function(){
-  document.getElementById('myCanvasElt').width=document.getElementById("code").width;
-  document.getElementById('myCanvasElt').height=document.getElementById("code").height;
-  document.getElementById('myCanvasDenoise').width=document.getElementById("code").width;
-  document.getElementById('myCanvasDenoise').height=document.getElementById("code").height;
-  document.getElementById('myCanvasThreshold').width=document.getElementById("code").width;
-  document.getElementById('myCanvasThreshold').height=document.getElementById("code").height;
+  reset();
   document.getElementById('aBtn').addEventListener("click",allProcess);
   document.getElementById('processBtn').addEventListener("click",ProcessToGrayImage);
   document.getElementById('denoiseBtn').addEventListener("click",Denoise);
@@ -17,16 +11,43 @@ window.onload=function(){
   document.getElementById('segBtn').addEventListener("click",Segmentation);
   document.getElementById('staBtn').addEventListener("click",Standard);
   document.getElementById('recBtn').addEventListener("click",recognizeOCR);
+  document.getElementById("code").addEventListener("click", change);
   document.getElementById("import").addEventListener("click", function(){
   document.getElementById("files").click();;
   });
 };
+function change(){
+  //debugger;
+  //src="images/"+Math.floor(Math.random()*10%8)+"/"+Math.floor(Math.random()*100%49)+".jpg";
+  src="images/2/"+Math.floor(Math.random()*100%49)+".jpg";
+  document.getElementById("code").src=src;
+  document.getElementById("code").onload=function(){
+    reset();
+  };
+
+}
+function reset(){
+  document.getElementById('myCanvasElt').width=document.getElementById("code").width;
+  document.getElementById('myCanvasElt').height=document.getElementById("code").height;
+  document.getElementById('myCanvasDenoise').width=document.getElementById("code").width;
+  document.getElementById('myCanvasDenoise').height=document.getElementById("code").height;
+  document.getElementById('myCanvasThreshold').width=document.getElementById("code").width;
+  document.getElementById('myCanvasThreshold').height=document.getElementById("code").height;
+  for(var i=1;i<=4;i++){
+    document.getElementById('myCanvasSeg'+i).height=document.getElementById("code").height;
+    document.getElementById('myCanvasSta'+i).height=document.getElementById("code").height;
+  }
+  var children=document.getElementById('te').childNodes;
+  for(var i = children.length - 1; i >= 0; i--) {   
+    document.getElementById('te').removeChild(children[i]);  
+  }  
+}
 function allProcess(){
   ProcessToGrayImage();
   OTSUAlgorithm();
   Denoise();
   Segmentation();
-  Standard();
+  //Standard();
 }
 function ProcessToGrayImage(){
   var canvas = document.getElementById('myCanvasElt');
@@ -457,8 +478,8 @@ function Standard(){
     // img.src=CanvasToImage(c);
     // // var img=document.getElementById("code");
     // console.log(img);
-    if(imgN[i].nodeName=="IMG"){
-      var img=imgN[i];
+    if(imgN[i-1].nodeName=="IMG"){
+      var img=imgN[i-1];
       var newCanvas = document.getElementById('myCanvasSta'+i);
       var newImage=newCanvas.getContext('2d');
       console.log(imgN);
@@ -554,7 +575,7 @@ function recognizeOCR(img,maxNearPoints,smallPicWidth,smallPicHeight,type=2,char
     // debugger;
     ans+= subCode;
   }
-  console.log(ans);
+  alert(ans);
   // //2.0识别
   // if (list.Count > 0)
   // {
